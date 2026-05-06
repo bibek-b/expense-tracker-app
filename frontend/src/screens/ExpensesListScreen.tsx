@@ -98,6 +98,7 @@ export function ExpensesListScreen({ navigation }: Props) {
                   filters.category === c
                     ? theme.colors.secondaryContainer
                     : undefined,
+                    height: 50,
               }}
             >
               {c}
