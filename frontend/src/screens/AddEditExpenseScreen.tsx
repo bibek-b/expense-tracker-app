@@ -22,9 +22,9 @@ type Props = NativeStackScreenProps<ExpensesStackParamList, "AddEditExpense">;
 export function AddEditExpenseScreen({ navigation, route }: Props) {
   const theme = useTheme();
   const id = route.params?.id;
+
   const existing = useExpensesStore((s) => (id ? s.getById(id) : undefined));
-  const add = useExpensesStore((s) => s.add);
-  const update = useExpensesStore((s) => s.update);
+  const { add, update } = useExpensesStore();
 
   const [amountText, setAmountText] = useState(
     existing ? String(existing.amount) : "",
@@ -162,5 +162,3 @@ export function AddEditExpenseScreen({ navigation, route }: Props) {
     </View>
   );
 }
-
-

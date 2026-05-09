@@ -14,12 +14,7 @@ import {
 } from "react-native-paper";
 
 import { useExpensesStore } from "../store/useExpensesStore";
-import type {
-  Expense,
-  ExpenseCategory,
-  ExpenseFilters,
-  ExpensesListScreenProps,
-} from "../types";
+import type { ExpenseCategory, ExpensesListScreenProps } from "../types";
 import { CATEGORIES } from "../utils/categories";
 import { passesFilters } from "../utils/expenseHelpers";
 
@@ -27,12 +22,8 @@ const ALL_CATEGORIES: Array<"All" | ExpenseCategory> = ["All", ...CATEGORIES];
 
 export function ExpensesListScreen({ navigation }: ExpensesListScreenProps) {
   const theme = useTheme();
-  const expenses = useExpensesStore((s) => s.expenses);
-  const filters = useExpensesStore((s) => s.filters);
-  const setFilters = useExpensesStore((s) => s.setFilters);
-  const clearFilters = useExpensesStore((s) => s.clearFilters);
-  const remove = useExpensesStore((s) => s.remove);
-  const reload = useExpensesStore((s) => s.reload);
+  const { expenses, filters, setFilters, clearFilters, remove, reload } =
+    useExpensesStore();
 
   const [showFilters, setShowFilters] = useState(false);
 

@@ -7,10 +7,7 @@ import { monthEndYYYYMMDD, monthStartYYYYMMDD } from "../utils/date";
 
 export function DashboardScreen() {
   const theme = useTheme();
-  const expenses = useExpensesStore((s) => s.expenses);
-  const monthlyBudget = useExpensesStore((s) => s.monthlyBudget);
-  const reload = useExpensesStore((s) => s.reload);
-  
+  const { expenses, monthlyBudget, reload } = useExpensesStore();
 
   const start = monthStartYYYYMMDD();
   const end = monthEndYYYYMMDD();
@@ -27,34 +24,31 @@ export function DashboardScreen() {
 
   // Calculate total expenses by category for the current month, used for the "By category" section of the dashboard. Groups expenses by category and sums amounts, then sorts by amount descending(highest first).
   const byCategory = useMemo(() => {
-  const totals = new Map<string, number>(); //used map because it's more efficient for grouping and summing by category. Key is category name, value is total amount.
+    const totals = new Map<string, number>(); //used map because it's more efficient for grouping and summing by category. Key is category name, value is total amount.
 
-  monthItems.forEach(item => {
-    totals.set(
-      item.category,
-      (totals.get(item.category) || 0) + item.amount
-    );
-  });
+    monthItems.forEach((item) => {
+      totals.set(item.category, (totals.get(item.category) || 0) + item.amount);
+    });
 
-  return Array.from(totals, ([category, amount]) => ({
-    category,
-    amount,
-  })).sort((a, b) => b.amount - a.amount); //highest amount first
-}, [monthItems]);
+    return Array.from(totals, ([category, amount]) => ({
+      category,
+      amount,
+    })).sort((a, b) => b.amount - a.amount); //highest amount first
+  }, [monthItems]);
 
-  // Find the maximum category total for the progress bars in the "By category" section. 
+  // Find the maximum category total for the progress bars in the "By category" section.
   const max = Math.max(0, ...byCategory.map((x) => x.amount));
 
-  console.log({max})
+  console.log({ max });
 
-  // Determine the user's monthly budget for the progress bar in the "Spent this month" section. 
-  const budgetCap = monthlyBudget != null && monthlyBudget > 0 ? monthlyBudget : null;
+  // Determine the user's monthly budget for the progress bar in the "Spent this month" section.
+  const budgetCap =
+    monthlyBudget != null && monthlyBudget > 0 ? monthlyBudget : null;
 
   const overBudget = budgetCap != null && total > budgetCap;
 
-  // Calculate the percentage of the budget used for the progress bar in the "Spent this month" section. 
+  // Calculate the percentage of the budget used for the progress bar in the "Spent this month" section.
   const progress = budgetCap != null ? Math.min(1, total / budgetCap) : 0;
-
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
