@@ -16,12 +16,9 @@ import type { ThemeMode } from "../types";
 
 export function SettingsScreen() {
   const theme = useTheme();
-  const monthlyBudget = useExpensesStore((s) => s.monthlyBudget);
-  const themeMode = useExpensesStore((s) => s.themeMode);
-  const setMonthlyBudget = useExpensesStore((s) => s.setMonthlyBudget);
-  const setThemeMode = useExpensesStore((s) => s.setThemeMode);
-  const syncPush = useExpensesStore((s) => s.syncPush);
-  const syncPull = useExpensesStore((s) => s.syncPull);
+
+  const { monthlyBudget, themeMode, setMonthlyBudget, setThemeMode } =
+    useExpensesStore();
 
   const [budgetText, setBudgetText] = useState(
     monthlyBudget != null ? String(monthlyBudget) : "",
@@ -33,6 +30,22 @@ export function SettingsScreen() {
   useEffect(() => {
     setBudgetText(monthlyBudget != null ? String(monthlyBudget) : "");
   }, [monthlyBudget]);
+
+  const handleBudgetSave = () => {
+    const t = budgetText.trim();
+    if (!t) void setMonthlyBudget(null);
+    else {
+      const n = Number(t.replace(",", "."));
+      if (Number.isFinite(n) && n > 0) void setMonthlyBudget(n);
+      else
+        setSnack({
+          msg: "Enter a positive number or clear the field.",
+          err: true,
+        });
+    }
+  };
+
+  console.log({themeMode})
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
@@ -77,19 +90,7 @@ export function SettingsScreen() {
         />
         <Button
           mode="contained"
-          onPress={() => {
-            const t = budgetText.trim();
-            if (!t) void setMonthlyBudget(null);
-            else {
-              const n = Number(t.replace(",", "."));
-              if (Number.isFinite(n) && n > 0) void setMonthlyBudget(n);
-              else
-                setSnack({
-                  msg: "Enter a positive number or clear the field.",
-                  err: true,
-                });
-            }
-          }}
+          onPress={handleBudgetSave}
           style={{ marginTop: 8 }}
         >
           Save budget
@@ -106,9 +107,9 @@ export function SettingsScreen() {
         >
           Chill! Datas are automatically synced to the cloud when you go online.
         </Text>
-        
       </ScrollView>
 
+{/* Snackbar for displaying messages */}
       <Snackbar
         visible={!!snack}
         onDismiss={() => setSnack(null)}

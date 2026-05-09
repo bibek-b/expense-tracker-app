@@ -23,6 +23,7 @@ export function startAutoSync(intervalMs = 30_000) {
     timer = null;
   };
 
+  
   const unsubscribe = NetInfo.addEventListener((state) => {
     const nowOnline = !!state.isConnected && (state.isInternetReachable ?? true);
     if (nowOnline && !online) {
@@ -35,7 +36,11 @@ export function startAutoSync(intervalMs = 30_000) {
     }
   });
 
-  // Initial fetch to set correct state quickly
+  /* Initial fetch to set correct state quickly
+  //If app starts while internet is available:
+  //- sync immediately
+  //begin periodic syncing
+  */
   void NetInfo.fetch().then((state) => {
     online = !!state.isConnected && (state.isInternetReachable ?? true);
     if (online) {

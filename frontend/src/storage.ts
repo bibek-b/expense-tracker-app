@@ -32,7 +32,8 @@ export async function loadExpenses(): Promise<Expense[]> {
 
 // Save expenses to AsyncStorage with a stable sort order.
 export async function saveExpenses(list: Expense[]) {
-  await AsyncStorage.setItem(EXPENSES_KEY, JSON.stringify(sortNewestFirst(list)));
+    const sorted = sortNewestFirst(list);
+    await AsyncStorage.setItem(EXPENSES_KEY, JSON.stringify(sorted));
 }
 
 // Load app settings from AsyncStorage.

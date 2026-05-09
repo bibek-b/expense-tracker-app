@@ -24,10 +24,10 @@ export default function App() {
     load().finally(() => setStarted(true));
 
     // Start background auto-sync (every 30 seconds while online)
-    const unsubscribe = startAutoSync(30_000);
-    return () => {
-      unsubscribe();
-    };
+    // const unsubscribe = startAutoSync(30_000);
+    // return () => {
+    //   unsubscribe();
+    // };
   }, [load]);
 
   return (

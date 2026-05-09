@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 import { Alert, FlatList, ScrollView, View } from "react-native";
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import {
   Appbar,
   Button,
@@ -15,28 +14,18 @@ import {
 } from "react-native-paper";
 
 import { useExpensesStore } from "../store/useExpensesStore";
-import type { Expense, ExpenseCategory, ExpenseFilters, ExpensesStackParamList } from "../types";
+import type {
+  Expense,
+  ExpenseCategory,
+  ExpenseFilters,
+  ExpensesListScreenProps,
+} from "../types";
 import { CATEGORIES } from "../utils/categories";
-import { loadExpenses } from "../storage";
-
-type Props = NativeStackScreenProps<ExpensesStackParamList, "ExpensesList">;
+import { passesFilters } from "../utils/expenseHelpers";
 
 const ALL_CATEGORIES: Array<"All" | ExpenseCategory> = ["All", ...CATEGORIES];
 
-function passesFilters(item: Expense, f: ExpenseFilters) {
-  if (f.category !== "All" && item.category !== f.category) return false;
-  const q = f.query.trim().toLowerCase();
-  if (q) {
-    const text =
-      `${item.note ?? ""} ${item.category} ${item.amount}`.toLowerCase();
-    if (!text.includes(q)) return false;
-  }
-  if (f.dateFrom.trim() && item.date < f.dateFrom.trim()) return false;
-  if (f.dateTo.trim() && item.date > f.dateTo.trim()) return false;
-  return true;
-}
-
-export function ExpensesListScreen({ navigation }: Props) {
+export function ExpensesListScreen({ navigation }: ExpensesListScreenProps) {
   const theme = useTheme();
   const expenses = useExpensesStore((s) => s.expenses);
   const filters = useExpensesStore((s) => s.filters);
@@ -46,8 +35,6 @@ export function ExpensesListScreen({ navigation }: Props) {
   const reload = useExpensesStore((s) => s.reload);
 
   const [showFilters, setShowFilters] = useState(false);
-
-  console.log({ expenses });
 
   const visible = useMemo(
     () => expenses.filter((e) => passesFilters(e, filters)),
@@ -98,7 +85,7 @@ export function ExpensesListScreen({ navigation }: Props) {
                   filters.category === c
                     ? theme.colors.secondaryContainer
                     : undefined,
-                    height: 50,
+                height: 50,
               }}
             >
               {c}

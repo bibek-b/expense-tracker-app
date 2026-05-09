@@ -10,35 +10,59 @@ export function DashboardScreen() {
   const expenses = useExpensesStore((s) => s.expenses);
   const monthlyBudget = useExpensesStore((s) => s.monthlyBudget);
   const reload = useExpensesStore((s) => s.reload);
+  
 
   const start = monthStartYYYYMMDD();
   const end = monthEndYYYYMMDD();
 
-
   const monthItems = useMemo(
     () => expenses.filter((e) => e.date >= start && e.date <= end),
-    [expenses, start, end]
+    [expenses, start, end],
   );
 
-  const total = useMemo(() => monthItems.reduce((s, e) => s + e.amount, 0), [monthItems]);
-  
+  const total = useMemo(
+    () => monthItems.reduce((s, e) => s + e.amount, 0),
+    [monthItems],
+  );
 
+  // Calculate total expenses by category for the current month, used for the "By category" section of the dashboard. Groups expenses by category and sums amounts, then sorts by amount descending(highest first).
   const byCategory = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const e of monthItems) map.set(e.category, (map.get(e.category) ?? 0) + e.amount);
-    return [...map.entries()]
-      .map(([category, amount]) => ({ category, amount }))
-      .sort((a, b) => b.amount - a.amount);
-  }, [monthItems]);
+  const totals = new Map<string, number>(); //used map because it's more efficient for grouping and summing by category. Key is category name, value is total amount.
 
+  monthItems.forEach(item => {
+    totals.set(
+      item.category,
+      (totals.get(item.category) || 0) + item.amount
+    );
+  });
+
+  return Array.from(totals, ([category, amount]) => ({
+    category,
+    amount,
+  })).sort((a, b) => b.amount - a.amount); //highest amount first
+}, [monthItems]);
+
+  // Find the maximum category total for the progress bars in the "By category" section. 
   const max = Math.max(0, ...byCategory.map((x) => x.amount));
+
+  console.log({max})
+
+  // Determine the user's monthly budget for the progress bar in the "Spent this month" section. 
   const budgetCap = monthlyBudget != null && monthlyBudget > 0 ? monthlyBudget : null;
+
   const overBudget = budgetCap != null && total > budgetCap;
+
+  // Calculate the percentage of the budget used for the progress bar in the "Spent this month" section. 
   const progress = budgetCap != null ? Math.min(1, total / budgetCap) : 0;
+
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <Appbar.Header elevated mode="small" style={{ backgroundColor: theme.colors.surface }}>
+      <Appbar.Header
+        elevated
+        mode="small"
+        style={{ backgroundColor: theme.colors.surface }}
+      >
         <Appbar.Content title="Overview" subtitle={`${start} → ${end}`} />
         <Appbar.Action icon="refresh" onPress={() => void reload()} />
       </Appbar.Header>
@@ -54,8 +78,12 @@ export function DashboardScreen() {
             </Text>
             {budgetCap != null ? (
               <>
-                <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-                  Budget {budgetCap.toFixed(2)} · {Math.round(progress * 100)}% used
+                <Text
+                  variant="bodySmall"
+                  style={{ color: theme.colors.onSurfaceVariant }}
+                >
+                  Budget {budgetCap.toFixed(2)} · {Math.round(progress * 100)}%
+                  used
                   {overBudget ? " · over limit" : ""}
                 </Text>
                 <ProgressBar
@@ -65,7 +93,10 @@ export function DashboardScreen() {
                 />
               </>
             ) : (
-              <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+              <Text
+                variant="bodySmall"
+                style={{ color: theme.colors.onSurfaceVariant }}
+              >
                 Set a monthly budget in Settings to track limits.
               </Text>
             )}
@@ -76,15 +107,26 @@ export function DashboardScreen() {
           <Card.Title title="By category" titleStyle={{ fontSize: 18 }} />
           <Card.Content style={{ gap: 12 }}>
             {byCategory.length === 0 ? (
-              <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+              <Text
+                variant="bodyMedium"
+                style={{ color: theme.colors.onSurfaceVariant }}
+              >
                 No expenses yet this month. Add some under Expenses.
               </Text>
             ) : null}
             {byCategory.map((row) => (
               <View key={row.category} style={{ gap: 6 }}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <Text variant="bodyLarge">{row.category}</Text>
-                  <Text variant="titleMedium" style={{ fontVariant: ["tabular-nums"] }}>
+                  <Text
+                    variant="titleMedium"
+                    style={{ fontVariant: ["tabular-nums"] }}
+                  >
                     {row.amount.toFixed(2)}
                   </Text>
                 </View>

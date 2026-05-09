@@ -5,7 +5,6 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import {
   Appbar,
   Button,
-  Divider,
   HelperText,
   Menu,
   Text,
@@ -16,7 +15,7 @@ import {
 import { useExpensesStore } from "../store/useExpensesStore";
 import type { ExpenseCategory, ExpensesStackParamList } from "../types";
 import { CATEGORIES } from "../utils/categories";
-import { currentYYYYMM, parseYmd, todayYYYYMMDD, toYYYYMMDD } from "../utils/date";
+import { todayYYYYMMDD, toYYYYMMDD } from "../utils/date";
 
 type Props = NativeStackScreenProps<ExpensesStackParamList, "AddEditExpense">;
 
@@ -26,11 +25,14 @@ export function AddEditExpenseScreen({ navigation, route }: Props) {
   const existing = useExpensesStore((s) => (id ? s.getById(id) : undefined));
   const add = useExpensesStore((s) => s.add);
   const update = useExpensesStore((s) => s.update);
-  const suggestCategory = useExpensesStore((s) => s.suggestCategory);
 
-  const [amountText, setAmountText] = useState(existing ? String(existing.amount) : "");
+  const [amountText, setAmountText] = useState(
+    existing ? String(existing.amount) : "",
+  );
   const [note, setNote] = useState(existing?.note ?? "");
-  const [category, setCategory] = useState<ExpenseCategory>(existing?.category ?? "Other");
+  const [category, setCategory] = useState<ExpenseCategory>(
+    existing?.category ?? "Other",
+  );
   const [date, setDate] = useState(existing?.date ?? todayYYYYMMDD());
   const [pickDate, setPickDate] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -47,6 +49,25 @@ export function AddEditExpenseScreen({ navigation, route }: Props) {
   const amount = useMemo(() => Number(amountText), [amountText]);
   const okAmount = Number.isFinite(amount) && amount > 0;
 
+  const handleSaveExpense = async () => {
+    setBusy(true);
+    try {
+      if (id) {
+        await update(id, { amount, category, date, note });
+      } else {
+        await add({ amount, category, date, note });
+      }
+      navigation.goBack();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDateChange = (_: any, d?: Date) => {
+    setPickDate(false);
+    if (d) setDate(toYYYYMMDD(d));
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <Appbar.Header style={{ backgroundColor: theme.colors.surface }}>
@@ -54,7 +75,10 @@ export function AddEditExpenseScreen({ navigation, route }: Props) {
         <Appbar.Content title={id ? "Edit expense" : "New expense"} />
       </Appbar.Header>
 
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
         <ScrollView contentContainerStyle={{ padding: 16, gap: 14 }}>
           <TextInput
             label="Amount"
@@ -72,7 +96,11 @@ export function AddEditExpenseScreen({ navigation, route }: Props) {
             visible={menuOpen}
             onDismiss={() => setMenuOpen(false)}
             anchor={
-              <Button mode="outlined" onPress={() => setMenuOpen(true)} icon="chevron-down">
+              <Button
+                mode="outlined"
+                onPress={() => setMenuOpen(true)}
+                icon="chevron-down"
+              >
                 {category}
               </Button>
             }
@@ -89,7 +117,11 @@ export function AddEditExpenseScreen({ navigation, route }: Props) {
             ))}
           </Menu>
 
-          <Button mode="outlined" icon="calendar" onPress={() => setPickDate(true)}>
+          <Button
+            mode="outlined"
+            icon="calendar"
+            onPress={() => setPickDate(true)}
+          >
             Date: {date}
           </Button>
 
@@ -99,34 +131,14 @@ export function AddEditExpenseScreen({ navigation, route }: Props) {
             mode="outlined"
             onChangeText={(t) => {
               setNote(t);
-              const guess = suggestCategory(t);
-              if (guess && !id) setCategory(guess);
             }}
           />
-          {suggestCategory(note) ? (
-            <HelperText type="info">Suggested: {suggestCategory(note)}</HelperText>
-          ) : null}
-
-         
 
           <Button
             mode="contained"
             disabled={!okAmount || busy}
             loading={busy}
-            onPress={async () => {
-              if (!okAmount) return;
-              setBusy(true);
-              try {
-                if (id) {
-                  await update(id, { amount, category, date, note });
-                } else {
-                  await add({ amount, category, date, note });
-                }
-                navigation.goBack();
-              } finally {
-                setBusy(false);
-              }
-            }}
+            onPress={handleSaveExpense}
           >
             Save
           </Button>
@@ -136,11 +148,8 @@ export function AddEditExpenseScreen({ navigation, route }: Props) {
       {pickDate && (
         <DateTimePicker
           mode="date"
-          value={parseYmd(date)}
-          onChange={(_, d) => {
-            setPickDate(false);
-            if (d) setDate(toYYYYMMDD(d));
-          }}
+          value={new Date(date)}
+          onChange={handleDateChange}
         />
       )}
     </View>

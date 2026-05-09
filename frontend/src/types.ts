@@ -1,4 +1,4 @@
-import { suggestCategoryFromNote } from "./utils/categories";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 export type ExpensesStackParamList = {
   ExpensesList: undefined;
@@ -74,7 +74,6 @@ export type useExpensesStoreType = {
 
   setFilters: (patch: Partial<ExpenseFilters>) => void;
   clearFilters: () => void;
-  suggestCategory: (note: string) => ReturnType<typeof suggestCategoryFromNote>;
 
   setMonthlyBudget: (value: number | null) => Promise<void>;
   setThemeMode: (mode: ThemeMode) => Promise<void>;
@@ -83,3 +82,5 @@ export type useExpensesStoreType = {
   syncPull: () => Promise<{ ok: boolean; message: string }>;
   syncNow: () => Promise<void>;
 };
+
+export type ExpensesListScreenProps = NativeStackScreenProps<ExpensesStackParamList, "ExpensesList">;
