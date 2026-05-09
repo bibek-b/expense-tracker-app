@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import {
@@ -14,8 +13,9 @@ import {
 
 import { useExpensesStore } from "../store/useExpensesStore";
 import type { ExpenseCategory, ExpensesStackParamList } from "../types";
-import { CATEGORIES } from "../utils/categories";
+import { CATEGORIES, suggestCategoryFromNote } from "../utils/categories";
 import { todayYYYYMMDD, toYYYYMMDD } from "../utils/date";
+import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 
 type Props = NativeStackScreenProps<ExpensesStackParamList, "AddEditExpense">;
 
@@ -41,7 +41,7 @@ export function AddEditExpenseScreen({ navigation, route }: Props) {
   useEffect(() => {
     if (!existing) return;
     setAmountText(String(existing.amount));
-    setNote(existing.note ?? "");
+    setNote(existing?.note ?? "");
     setCategory(existing.category);
     setDate(existing.date);
   }, [existing]);
@@ -66,6 +66,15 @@ export function AddEditExpenseScreen({ navigation, route }: Props) {
   const handleDateChange = (_: any, d?: Date) => {
     setPickDate(false);
     if (d) setDate(toYYYYMMDD(d));
+  };
+
+  const handleNoteChange = (t: string) => {
+    setNote(t);
+    // Auto-suggest category based on note input
+    const autoSuggestedCategory = suggestCategoryFromNote(t);
+    if (autoSuggestedCategory !== category) {
+      setCategory(autoSuggestedCategory);
+    }
   };
 
   return (
@@ -129,9 +138,7 @@ export function AddEditExpenseScreen({ navigation, route }: Props) {
             label="Note (optional)"
             value={note}
             mode="outlined"
-            onChangeText={(t) => {
-              setNote(t);
-            }}
+            onChangeText={handleNoteChange}
           />
 
           <Button
@@ -155,3 +162,5 @@ export function AddEditExpenseScreen({ navigation, route }: Props) {
     </View>
   );
 }
+
+
