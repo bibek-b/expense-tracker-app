@@ -25,9 +25,6 @@ export function monthEndYYYYMMDD(d = new Date()) {
   return toYYYYMMDD(new Date(d.getFullYear(), d.getMonth() + 1, 0));
 }
 
-export function daysInMonth(year: number, monthIndex0: number) {
-  return new Date(year, monthIndex0 + 1, 0).getDate();
-}
 
 /** Sum amounts for expenses whose date starts with `yyyyMm` (e.g. `2026-05`) .  */
 export function sumExpensesInMonth(expenses: { date: string; amount: number }[], yyyyMm: string) {
