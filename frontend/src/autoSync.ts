@@ -25,7 +25,7 @@ export function startAutoSync(intervalMs = 30_000) {
 
   
   const unsubscribe = NetInfo.addEventListener((state) => {
-    const nowOnline = !!state.isConnected && (state.isInternetReachable ?? true);
+    const nowOnline = !!state.isConnected;
     if (nowOnline && !online) {
       online = true;
       void useExpensesStore.getState().syncNow();
@@ -42,7 +42,7 @@ export function startAutoSync(intervalMs = 30_000) {
   //begin periodic syncing
   */
   void NetInfo.fetch().then((state) => {
-    online = !!state.isConnected && (state.isInternetReachable ?? true);
+    online = !!state.isConnected;
     if (online) {
       void useExpensesStore.getState().syncNow();
       startTimer();
